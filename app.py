@@ -1,11 +1,12 @@
 import streamlit as st
 from PIL import Image
-from utils import text_to_binary, hide_text_in_image, extract_text_from_image
+from utils import text_to_binary, hide_text_in_image, extract_text_from_image, verify_image_integrity
 
 # Streamlit UI
-st.title("LSB Steganography Tool")
+st.title("Steganography and Forensic Tool")
+st.text("Hide text in an image and then decode it back and verify image integrity.")
 
-task = st.radio("Select a task:", ("Encode Text into Image", "Decode Text from Image"))
+task = st.radio("Select a task:", ("Encode Text into Image", "Decode Text from Image", "Verify Image Integrity"))
 
 if task == "Encode Text into Image":
     st.header("Encode Text into an Image")
@@ -18,7 +19,7 @@ if task == "Encode Text into Image":
         text_to_hide = st.text_area("Enter text to hide:")
         if st.button("Encode Text"):
             if text_to_hide:
-                steganographic_image_path = "steganographic_image.png"
+                steganographic_image_path = uploaded_image.name.split(".")[0] + "_steganographic.png"
                 hide_text_in_image(uploaded_image, text_to_hide, steganographic_image_path)
 
 elif task == "Decode Text from Image":
@@ -33,5 +34,30 @@ elif task == "Decode Text from Image":
             try:
                 extracted_text = extract_text_from_image(uploaded_steganographic_image)
                 st.success("Hidden Text: " + extracted_text)
+            except Exception as e:
+                st.error(str(e))
+
+elif task == "Verify Image Integrity":
+    st.header("Verify Image Integrity")
+
+    uploaded_original_image = st.file_uploader("Upload an original image (PNG or JPG):", type=["png", "jpg", "jpeg"])
+    uploaded_steganographic_image = st.file_uploader("Upload a steganographic image (PNG or JPG):", type=["png", "jpg", "jpeg"])
+
+    if uploaded_original_image and uploaded_steganographic_image:
+        original_image = Image.open(uploaded_original_image)
+        st.image(original_image, caption="Original Image", use_column_width=True)
+
+        steganographic_image = Image.open(uploaded_steganographic_image)
+        st.image(steganographic_image, caption="Steganographic Image", use_column_width=True)
+
+        if st.button("Verify Image Integrity"):
+            try:
+                uploaded_original_image_path = uploaded_original_image.name
+                uploaded_steganographic_image_path = uploaded_steganographic_image.name
+                is_integrity_verified = verify_image_integrity(uploaded_original_image_path, uploaded_steganographic_image_path)
+                if is_integrity_verified:
+                    st.success("Image integrity verified.")
+                else:
+                    st.error("Image integrity not verified.")
             except Exception as e:
                 st.error(str(e))
