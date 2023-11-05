@@ -49,6 +49,15 @@ def hide_text_in_image(image_path, text_to_hide, output_path):
             blue = pixel[2]
             red = red & 254 | int(binary_text[data_index])
             data_index += 1
+
+            if data_index < len(binary_text):
+                green = green & 254 | int(binary_text[data_index])
+                data_index += 1
+
+            if data_index < len(binary_text):
+                blue = blue & 254 | int(binary_text[data_index])
+                data_index += 1
+
             encoded_pixels.append((red, green, blue))
         else:
             encoded_pixels.append(pixel)
@@ -67,7 +76,9 @@ def extract_text_from_image(image_path):
 
     for pixel in img_data:
         red = pixel[0]
-        binary_text += str(red & 1)
+        green = pixel[1]
+        blue = pixel[2]
+        binary_text += str(red & 1) + str(green & 1) + str(blue & 1)
 
     # Find the position of the delimiter
     delimiter_position = binary_text.find(delimiter)

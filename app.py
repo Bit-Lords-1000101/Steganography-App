@@ -7,19 +7,9 @@ import sys
 # Logging
 logger.add("app.log")
 
-class StreamlitLogToCustomLog:
-    def write(self, message, type):
-        if type == "stdout":
-            logger.info(message)
-        elif type == "stderr":
-            logger.error(message)
-
 # Streamlit UI
 st.title("Steganography and Forensic Tool")
 st.text("Hide text in an image and then decode it back and verify image integrity.")
-
-sys.stdout = StreamlitLogToCustomLog()
-sys.stderr = StreamlitLogToCustomLog()
 
 task = st.radio("Select a task:", ("Encode Text into Image", "Decode Text from Image", "Verify Image Integrity"))
 
