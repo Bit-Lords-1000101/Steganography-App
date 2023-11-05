@@ -1,14 +1,30 @@
 import streamlit as st
 from PIL import Image
 from utils import text_to_binary, hide_text_in_image, extract_text_from_image, verify_image_integrity
+from loguru import logger
+import sys
+
+# Logging
+logger.add("app.log")
+
+class StreamlitLogToCustomLog:
+    def write(self, message, type):
+        if type == "stdout":
+            logger.info(message)
+        elif type == "stderr":
+            logger.error(message)
 
 # Streamlit UI
 st.title("Steganography and Forensic Tool")
 st.text("Hide text in an image and then decode it back and verify image integrity.")
 
+sys.stdout = StreamlitLogToCustomLog()
+sys.stderr = StreamlitLogToCustomLog()
+
 task = st.radio("Select a task:", ("Encode Text into Image", "Decode Text from Image", "Verify Image Integrity"))
 
 if task == "Encode Text into Image":
+    logger.info("Encode Text into Image selected.")
     st.header("Encode Text into an Image")
 
     uploaded_image = st.file_uploader("Upload an image (PNG or JPG):", type=["png", "jpg", "jpeg"])
@@ -23,6 +39,7 @@ if task == "Encode Text into Image":
                 hide_text_in_image(uploaded_image, text_to_hide, steganographic_image_path)
 
 elif task == "Decode Text from Image":
+    logger.info("Decode Text from Image selected.")
     st.header("Decode Text from an Image")
 
     uploaded_steganographic_image = st.file_uploader("Upload a steganographic image (PNG or JPG):", type=["png", "jpg", "jpeg"])
@@ -35,9 +52,11 @@ elif task == "Decode Text from Image":
                 extracted_text = extract_text_from_image(uploaded_steganographic_image)
                 st.success("Hidden Text: " + extracted_text)
             except Exception as e:
+                logger.error(str(e))
                 st.error(str(e))
 
 elif task == "Verify Image Integrity":
+    logger.info("Verify Image Integrity selected.")
     st.header("Verify Image Integrity")
 
     uploaded_original_image = st.file_uploader("Upload an original image (PNG or JPG):", type=["png", "jpg", "jpeg"])
@@ -60,4 +79,5 @@ elif task == "Verify Image Integrity":
                 else:
                     st.error("Image integrity not verified.")
             except Exception as e:
+                logger.error(str(e))
                 st.error(str(e))
